@@ -1,0 +1,138 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<script src="https://rawgit.com/kayalshri/tableExport.jquery.plugin/master/jquery.base64.js"></script>
+<link href="https://unpkg.com/bootstrap-table@1.18.0/dist/bootstrap-table.min.css" rel="stylesheet">
+<!-- <script src="https://unpkg.com/bootstrap-table@1.18.0/dist/bootstrap-table.min.js"></script> -->
+
+<div class="jumbotron">
+  <h1 class="display-4">{{ app_data['name'] }}</h1>
+  <p class="lead">{{ app_data['description'] }} </p>
+  <p class="lead"></p>
+  Detect bots, prevent fraud and abuse by detecting users trying to hide behind a VPN, proxy, or TOR. Geolocate IP addresses to find out which country or city the website visitors are from.
+</p>
+  <hr class="my-4">
+  <p>Please provide Domain Name URL or IP address</p>
+  <div class="container text-center">
+    <div class="row">
+      <div class="col">
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="urlSPAN">URL</span>
+          <input type="text" class="form-control" id="url" aria-label="url" aria-describedby="url">
+          <button class="btn btn-primary" type="button" id="btndns">Check Details</button>
+          <button class="btn btn-secondary" type="button"  id="btnclear">Clear</button>
+        </div>
+      </div>
+
+      <div class="col">
+
+      </div>
+    </div>
+  </div>
+  <div class="container text-center">
+    <div class="row">
+      <div class="col">
+        <div class="d-flex align-items-center highlight-toolbar ps-3 pe-2 py-1 border-0 border-top border-bottom">
+          <small class="font-monospace text-body-secondary text-uppercase">Domain Details</small>
+
+        </div>
+        <div class="highlight">
+          <table class="table table-condensed" id="binding-table">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="table_body_dns">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="d-flex align-items-center highlight-toolbar ps-3 pe-2 py-1 border-0 border-top border-bottom">
+          <small class="font-monospace text-body-secondary text-uppercase">Fraudulent Details</small>
+
+        </div>
+        <div class="highlight">
+          <table class="table table-condensed" id="binding-table">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="table_body_fr">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <a class="btn btn-primary btn-lg" href="/contact" role="button">Contact</a> -->
+</div>
+
+<script type=text/javascript>
+    $(document).ready(function () { 
+      var $table_body_dns = $('#table_body_dns');
+      var $table_body_fr = $('#table_body_fr');
+      $('#btnclear').on('click', function(e) {
+        $('#table_body_fr').html("");
+        $('#table_body_dns').html("");
+      });
+
+      
+    $('#btndns').on('click', function(e) {
+      var val = $('#url').val();
+      $.ajax({
+    beforeSend: function(request) {
+        request.setRequestHeader("Authorization", 'Token=');
+    },
+    dataType: "json",
+    url: 'https://whoisjson.com/api/v1/whois?domain='+val,
+    success: function(data) {
+      
+      for (var key in data) {
+    $('<tr>').append(
+            $('<td>').text(key),
+            $('<td>').text(data[key])).appendTo($table_body_dns);
+  }
+
+      var ip = data.ips;
+
+      console.log("Fraud Detection for: "+ip);
+    
+    const settings = {
+	async: true,
+	crossDomain: true,
+	url: 'https://ip-reputation-geoip-and-detect-vpn.p.rapidapi.com/?ip='+ip,
+	method: 'GET',
+	headers: {
+		'X-RapidAPI-Key': '',
+		'X-RapidAPI-Host': 'ip-reputation-geoip-and-detect-vpn.p.rapidapi.com'
+	}
+};
+
+$.ajax(settings).done(function (response) {
+
+  for (var key in response) {
+    $('<tr>').append(
+            $('<td>').text(key),
+            $('<td>').text(response[key])).appendTo($table_body_fr);
+  }
+
+});
+
+    }
+});
+    });
+
+
+
+
+  });
+</script>
+{% endblock %}
